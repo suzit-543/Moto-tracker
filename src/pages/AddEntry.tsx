@@ -32,14 +32,26 @@ function AddEntry() {
   const [nextServiceDue, setNextServiceDue] = useState(
     existingEntry?.type === 'service' ? existingEntry.nextServiceDue?.toString() ?? '' : ''
   );
+  const [error, setError] = useState('')
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (parseFloat(odometer) < 0) {
-      alert('Odometer cannot be negative');
+      setError('Odometer cannot be negative');
       return;
     }
     const id = isEditMode ? existingEntry!.id : crypto.randomUUID();
+    const currentMaxOdometer = Math.max(0, ...entries.filter((entry) => entry.id != id).map((entry) => entry.odometer))
+    if (parseFloat(odometer) < currentMaxOdometer) {
+      setError('Odometer cannot be less than the last recorded value')
+      return
+    }
+
+    const today = new Date().toLocaleDateString('en-CA');
+    if (date > today) {
+      setError('Date cannot be in the future');
+      return;
+    }
 
     let newEntry: Entry;
     if (entryType === 'fuel') {
@@ -67,11 +79,12 @@ function AddEntry() {
         nextServiceDue: nextServiceDue ? parseFloat(nextServiceDue) : undefined,
       };
     }
-     if(isEditMode){
-      dispatch({ type: 'EDIT_ENTRY', payload: newEntry });}
-      else{
-        dispatch({type:'ADD_ENTRY',payload:newEntry})
-      }
+    if (isEditMode) {
+      dispatch({ type: 'EDIT_ENTRY', payload: newEntry });
+    }
+    else {
+      dispatch({ type: 'ADD_ENTRY', payload: newEntry })
+    }
     if (isEditMode) {
       navigate('/history');
     } else {
@@ -124,6 +137,7 @@ function AddEntry() {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
+            max={new Date().toLocaleDateString('en-CA')}
             required
           />
         </div>
@@ -203,6 +217,7 @@ function AddEntry() {
             </div>
           </>
         )}
+        {error && <p className='form-error'>{error}</p>}
         <button type="submit" className="btn btn--primary">
           {isEditMode ? 'Save Changes' : 'Add Entry'}
         </button>

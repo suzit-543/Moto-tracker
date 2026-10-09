@@ -296,3 +296,12 @@ a {
 .btn--secondary:hover {
   border-color: var(--color-text-muted);
 }
+
+.form-error {
+  padding: var(--space-sm) var(--space-md);
+  background-color: rgba(192, 57, 43, 0.15);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius);
+  color: #e8887a;
+  font-size: 0.9rem;
+}
